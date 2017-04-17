@@ -230,6 +230,10 @@ char* getenv(const char* name) {
 S uid_t (*old_geteuid)(void) = NULL;
 
 uid_t geteuid(void) {
+	xd(old_geteuid, geteuid);
+	uid_t tmp = old_geteuid();
+	p("%s() = %d\n","geteuid", tmp);
+	return tmp;
 }
 
 S gid_t (*old_getgid)(void) = NULL;
