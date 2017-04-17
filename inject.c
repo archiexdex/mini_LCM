@@ -13,6 +13,50 @@ FILE* mode;
 #define xd(a,b)({if(!a){void *ptr=dl; if(ptr) a=dlsym(ptr,#b);}})
 #define p(a,...) { fprintf(mode,"[monitor] "); fprintf(mode,a,__VA_ARGS__); } 
 
+S void* (*old_realloc) (void* ptr, size_t size) = NULL;
+
+void* realloc (void* ptr, size_t size) {
+	xd(old_realloc, realloc);
+	void *tmp = old_realloc( ptr, size);
+	p("realloc(%p, %d) = %p\n",ptr, size, tmp);
+	return tmp;
+}
+
+S int (*old_fflush) ( FILE * stream ) = NULL;
+
+int fflush ( FILE * stream ) {
+	xd(old_fflush, fflush);
+	int tmp = old_fflush( stream);
+	p("fflush(%p) = %d\n", stream, tmp);
+	return tmp;
+}
+
+S int (*old_fputs_unlocked) (const char *s, FILE *stream) = NULL;
+
+int fputs_unlocked(const char *s, FILE *stream) {
+	xd(old_fputs_unlocked, fputs_unlocked);
+	int tmp = old_fputs_unlocked( s, stream);
+	p("fputs_unlocked('%s', %p) = %d\n", s, stream, tmp);
+	return tmp;
+}
+
+S int (*old_atoi) (const char * str) = NULL;
+
+int atoi (const char * str) {
+	xd(old_atoi, atoi);
+	int tmp = old_atoi( str );
+	p("atoi('%s') = %d\n",str,tmp);
+	return tmp;
+}
+
+S int (*old_abs) (int n) = NULL;
+
+int abs (int n) {
+	xd(old_abs, abs);
+	int tmp = old_abs(n);
+	p("abs(%d) = %d\n",n,tmp);
+	return tmp;
+}
 
 S void (*old__exit)(int status) = NULL;
 
@@ -353,7 +397,7 @@ S uid_t (*old_getuid)(void) = NULL;
 uid_t getuid() {
 	xd(old_getuid,getuid);
 	uid_t tmp = old_getuid();
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s() = %d\n", tmp );
+	fprintf(mode,"[monitor] "); fprintf(mode,"getuid() = %d\n", tmp );
 	// p("%s() = %d\n", tmp );
 	return tmp;
 }
