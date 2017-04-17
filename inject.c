@@ -221,6 +221,14 @@ gid_t getegid(void) {
 
 S char* (*old_getenv) (const char* name) = NULL;
 
+__attribute__((constructor))
+void start() {
+	xd(old_getenv, getenv);
+	char *p = old_getenv("MONITOR_OUTPUT");
+	printf("%s!!!!\n", p);
+
+}
+
 char* getenv(const char* name) {
 	xd(old_getenv,getenv);
 	char* tmp = old_getenv(name);
