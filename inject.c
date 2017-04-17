@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <stdarg.h>
 
 FILE* mode;
 
@@ -101,42 +102,83 @@ int execl(const char *path, const char *arg, ...) {
 	int tmp = old_execl(path, arg, vl);
 	fprintf(mode, "[monitor] execl(%s, %s",path, arg );
 	
-	const char *s = va_arg(vl,  char *);
+	char *s;
+	s = va_arg(vl, const char*);
 	while ( s != NULL ){
  		fprintf(stderr, ", %s", s);	
  		s = va_arg(vl, const char *);
 	}
-	fprintf(stderr, "NULL) = %d\n", tmp);	
-	
+	fprintf(stderr, ", NULL) = %d\n", tmp);	
 	return tmp;
 }
 
 S int (*old_execlp)(const char *file, const char *arg, ...) = NULL;
 
 int execlp(const char *file, const char *arg, ...) {
+	xd(old_execlp,execlp);
+	va_list vl;
+	va_start(vl, arg);
+	int tmp = old_execl( file, arg, vl);
+	fprintf(mode, "[monitor] execlp(%s, %s", file, arg );
+	
+	char *s;
+	s = va_arg(vl, const char*);
+	while ( s != NULL ){
+ 		fprintf(mode, ", %s", s);	
+ 		s = va_arg(vl, const char *);
+	}
+	fprintf(mode, ", NULL) = %d\n", tmp);	
+	return tmp;
 }
 
-/*
+
 S int (*old_execle)(const char *path, const char *arg, ...) = NULL;
 
-int execle(const char *path, const char *arg, ..., char * const envp[]) {
+int execle(const char *path, const char *arg, ...) {
+	xd(old_execle,execle);
+	va_list vl;
+	va_start(vl, arg);
+	int tmp = old_execl(path, arg, vl);
+	fprintf(mode, "[monitor] execle(%s, %s",path, arg );
+	
+	char *s;
+	s = va_arg(vl, const char*);
+	while ( s != NULL ){
+ 		fprintf(mode, ", %s", s);	
+ 		s = va_arg(vl, const char *);
+	}
+	fprintf(mode, ", NULL");
+	s = va_arg(vl, const char*);
+	fprintf(mode, ", %s) = %d\n",s,tmp);
+	return tmp;
 }
-*/
+
 
 S int (*old_execv)(const char *path, char *const argv[]) = NULL;
 
 int execv(const char *path, char *const argv[]) {
+	xd(old_execv,execv);
+	int tmp = old_execl( path, argv);
+	fprintf(mode, "[monitor] execv(%s, %p) = %d\n", path, argv, tmp );
+	return tmp;
 }
 
 S int (*old_execvp)(const char *file, char *const argv[]) = NULL;
 
 int execvp(const char *file, char *const argv[]) {
+	xd(old_execvp,execvp);
+	int tmp = old_execvp( file, argv);
+	fprintf(mode, "[monitor] execvp(%s, %p) = %d",file, argv, tmp );
+	return tmp;
 }
 
 S int (*old_execvpe)(const char *file, char *const argv[], char *const envp[]) = NULL;
 
 int execvpe(const char *file, char *const argv[], char *const envp[]) {
-
+	xd(old_execvpe,execvpe);
+	int tmp = old_execvpe( file, argv, envp);
+	fprintf(mode, "[monitor] execvpe(%s, %p, %p) = %d",file, argv, envp, tmp );
+	return tmp;
 }
 
 S void   (*old_exit)    (int status) = NULL;
