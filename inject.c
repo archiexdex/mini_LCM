@@ -35,7 +35,7 @@ S int (*old_chmod)(const char *pathname, mode_t mode) = NULL;
 int chmod(const char *pathname, mode_t mode) {
 	xd(old_chmod,chmod);
 	int tmp = old_chmod(pathname, mode);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %d) = %d\n", "chmod",pathname, mode, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s', %d) = %d\n", "chmod",pathname, mode, tmp);
 	// p("%s(%s, %d) = %d\n", "chmod",pathname, mode, tmp );
 	return tmp;
 }
@@ -45,7 +45,7 @@ S int (*old_chown)(const char *pathname, uid_t owner, gid_t group) = NULL;
 int chown(const char *pathname, uid_t owner, gid_t group) {
 	xd(old_chown, chown);
 	int tmp = old_chown(pathname, owner, group);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s,%d,%d) = %d\n","chown", pathname, owner, group, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s',%d,%d) = %d\n","chown", pathname, owner, group, tmp);
 	// p("%s(%s,%d,%d) = %d\n","chown", pathname, owner, group, tmp);
 	return tmp;
 }
@@ -75,7 +75,7 @@ S int (*old_creat)(const char *path, mode_t mode) = NULL;
 int creat(const char *path, mode_t mode){
 	xd(old_creat, creat);
 	int tmp = old_creat(path, mode);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %d) = %d\n","creat", path, mode, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s', %d) = %d\n","creat", path, mode, tmp);
 	// p("%s(%s, %d) = %d\n","creat", path, mode, tmp);
 	return tmp;
 }
@@ -107,12 +107,12 @@ int execl(const char *path, const char *arg, ...) {
 	va_list vl;
 	va_start(vl, arg);
 	int tmp = old_execl(path, arg, vl);
-	fprintf(mode, "[monitor] execl(%s, %s",path, arg );
+	fprintf(mode, "[monitor] execl('%s', '%s'",path, arg );
 	
 	char *s;
 	s = va_arg(vl, const char*);
 	while ( s != NULL ){
- 		fprintf(stderr, ", %s", s);	
+ 		fprintf(stderr, ", '%s'", s);	
  		s = va_arg(vl, const char *);
 	}
 	fprintf(stderr, ", NULL) = %d\n", tmp);	
@@ -126,12 +126,12 @@ int execlp(const char *file, const char *arg, ...) {
 	va_list vl;
 	va_start(vl, arg);
 	int tmp = old_execl( file, arg, vl);
-	fprintf(mode, "[monitor] execlp(%s, %s", file, arg );
+	fprintf(mode, "[monitor] execlp('%s', '%s'", file, arg );
 	
 	char *s;
 	s = va_arg(vl, const char*);
 	while ( s != NULL ){
- 		fprintf(mode, ", %s", s);	
+ 		fprintf(mode, ", '%s'", s);	
  		s = va_arg(vl, const char *);
 	}
 	fprintf(mode, ", NULL) = %d\n", tmp);	
@@ -146,17 +146,17 @@ int execle(const char *path, const char *arg, ...) {
 	va_list vl;
 	va_start(vl, arg);
 	int tmp = old_execl(path, arg, vl);
-	fprintf(mode, "[monitor] execle(%s, %s",path, arg );
+	fprintf(mode, "[monitor] execle('%s', '%s'",path, arg );
 	
 	char *s;
 	s = va_arg(vl, const char*);
 	while ( s != NULL ){
- 		fprintf(mode, ", %s", s);	
+ 		fprintf(mode, ", '%s'", s);	
  		s = va_arg(vl, const char *);
 	}
 	fprintf(mode, ", NULL");
 	s = va_arg(vl, const char*);
-	fprintf(mode, ", %s) = %d\n",s,tmp);
+	fprintf(mode, ", '%s') = %d\n",s,tmp);
 	return tmp;
 }
 
@@ -166,7 +166,7 @@ S int (*old_execv)(const char *path, char *const argv[]) = NULL;
 int execv(const char *path, char *const argv[]) {
 	xd(old_execv,execv);
 	int tmp = old_execl( path, argv);
-	fprintf(mode, "[monitor] execv(%s, %p) = %d\n", path, argv, tmp );
+	fprintf(mode, "[monitor] execv('%s', %p) = %d\n", path, argv, tmp );
 	return tmp;
 }
 
@@ -175,7 +175,7 @@ S int (*old_execvp)(const char *file, char *const argv[]) = NULL;
 int execvp(const char *file, char *const argv[]) {
 	xd(old_execvp,execvp);
 	int tmp = old_execvp( file, argv);
-	fprintf(mode, "[monitor] execvp(%s, %p) = %d",file, argv, tmp );
+	fprintf(mode, "[monitor] execvp('%s', %p) = %d",file, argv, tmp );
 	return tmp;
 }
 
@@ -184,7 +184,7 @@ S int (*old_execvpe)(const char *file, char *const argv[], char *const envp[]) =
 int execvpe(const char *file, char *const argv[], char *const envp[]) {
 	xd(old_execvpe,execvpe);
 	int tmp = old_execvpe( file, argv, envp);
-	fprintf(mode, "[monitor] execvpe(%s, %p, %p) = %d",file, argv, envp, tmp );
+	fprintf(mode, "[monitor] execvpe('%s', %p, %p) = %d",file, argv, envp, tmp );
 	return tmp;
 }
 
@@ -247,13 +247,22 @@ pid_t fork(void) {
 	return tmp;
 }
 
-S int (*old_fstat)(int fd, struct stat *buf) = NULL;
+// S int (*old_fstat)(int fd, struct stat *buf) = NULL;
 
-int fstat(int fd, struct stat *buf) {
-	xd(old_fstat, fstat);
-	int tmp = old_fstat( fd, buf);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%d, %p) = %d\n","fstat", fd, buf, tmp);
-	// p("%s(%d, %p) = %d\n","fstat", fd, buf, tmp);
+// int fstat(int fd, struct stat *buf) {
+// 	xd(old_fstat, fstat);
+// 	int tmp = old_fstat( fd, buf);
+// 	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%d, %p) = %d\n","fstat", fd, buf, tmp);
+// 	// p("%s(%d, %p) = %d\n","fstat", fd, buf, tmp);
+// 	return tmp;
+// }
+
+S int (*old___fxstat)(int ver, int fildes, struct stat * stat_buf) = NULL;
+
+int __fxstat(int ver, int fildes, struct stat * stat_buf){
+	xd(old___fxstat, __fxstat);
+	pid_t tmp = old___fxstat(ver, fildes, stat_buf);
+	fprintf(mode,"[monitor] "); fprintf(mode,"__fxstat(%d, %d, %p) = %d\n",ver, fildes, stat_buf, tmp);
 	return tmp;
 }
 
@@ -282,7 +291,7 @@ S char *(*old_getcwd)(char *buf, size_t size) = NULL;
 char *getcwd(char *buf, size_t size) {
 	xd(old_getcwd,getcwd);
 	char* tmp = old_getcwd(buf, size);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %d) = %s\n","getcwd", buf, size, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s', %d) = '%s'\n","getcwd", buf, size, tmp);
 	// p("%s(%s, %d) = %s\n","getcwd", buf, size, tmp);
 	return tmp;
 }
@@ -354,18 +363,27 @@ S int (*old_link)(const char *path1, const char *path2) = NULL;
 int link(const char *path1, const char *path2) {
 	xd(old_link, link);
 	int tmp = old_link(path1, path2);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %s) = %d\n","link", path1, path2, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s', '%s') = %d\n","link", path1, path2, tmp);
 	// p("%s(%s, %s) = %d\n","link", path1, path2, tmp);
 	return tmp;
 }
 
-S int (*old_lstat)(const char *path, struct stat *buf) = NULL;
+// S int (*old_lstat)(const char *path, struct stat *buf) = NULL;
+// 
+// int lstat(const char *path, struct stat *buf){
+// 	xd(old_lstat, lstat);
+// 	int tmp = old_lstat(path, buf);
+// 	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %p) = %d\n","lstat", path, buf, tmp);
+// 	// p("%s(%s, %p) = %d\n","lstat", path, buf, tmp);
+// 	return tmp;
+// }
 
-int lstat(const char *path, struct stat *buf){
-	xd(old_lstat, lstat);
-	int tmp = old_lstat(path, buf);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %p) = %d\n","lstat", path, buf, tmp);
-	// p("%s(%s, %p) = %d\n","lstat", path, buf, tmp);
+S int (*old___lxstat)(int ver, const char * path, struct stat * stat_buf) = NULL;
+
+int __lxstat(int ver, const char * path, struct stat * stat_buf) {
+	xd(old___lxstat, __lxstat);
+	int tmp = old___lxstat(ver, path, stat_buf);
+	fprintf(mode,"[monitor] "); fprintf(mode,"__lxstat(%d, '%s', %p) = %d\n",ver, path, stat_buf, tmp);
 	return tmp;
 }
 
@@ -374,7 +392,7 @@ S int (*old_mkdir)(const char *path, mode_t mode) = NULL;
 int mkdir(const char *path, mode_t mode) {
 	xd(old_mkdir, mkdir);
 	int tmp = old_mkdir(path, mode);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %d) = %d\n","mkdir", path, mode, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s', %d) = %d\n","mkdir", path, mode, tmp);
 	// p("%s(%s, %d) = %d\n","mkdir", path, mode, tmp);
 	return tmp;
 }
@@ -384,7 +402,7 @@ S char *(*old_mkdtemp)(char *template) = NULL;
 char *mkdtemp(char *template) {
 	xd(old_mkdtemp, mkdtemp);
 	char* tmp = old_mkdtemp(template);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s) = %s\n","mkdtemp", template, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s') = '%s'\n","mkdtemp", template, tmp);
 	// p("%s(%s) = %s\n","mkdtemp", template, tmp);
 	return tmp;
 }
@@ -394,7 +412,7 @@ S int (*old_mkfifo)(const char *path, mode_t mode) = NULL;
 int mkfifo(const char *path, mode_t mode) {
 	xd(old_mkfifo, mkfifo);
 	int tmp = old_mkfifo(path, mode);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %d) = %d\n","mkfifo",path, mode, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s', %d) = %d\n","mkfifo",path, mode, tmp);
 	// p("%s(%s, %d) = %d\n","mkfifo",path, mode, tmp);
 	return tmp;
 }
@@ -404,7 +422,7 @@ S int (*old_mkstemp)(char *template) = NULL;
 int mkstemp(char *template) {
 	xd(old_mkstemp, mkstemp);
 	int tmp = old_mkstemp(template);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s) = %d\n","mkstemp", template, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s') = %d\n","mkstemp", template, tmp);
 	// p("%s(%s) = %d\n","mkstemp", template, tmp);
 	return tmp;
 }
@@ -455,7 +473,7 @@ S int (*old_putenv)(char *string) = NULL;
 int putenv(char *string) {
 	xd(old_putenv, putenv);
 	int tmp = old_putenv(string);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s) = %d\n","putenv", string, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s') = %d\n","putenv", string, tmp);
 	// p("%s(%s) = %d\n","putenv", string, tmp);
 	return tmp;
 }
@@ -525,7 +543,7 @@ S ssize_t (*old_readlink)(const char *pathname, char *buf, size_t bufsiz) = NULL
 ssize_t readlink(const char *pathname, char *buf, size_t bufsiz) {
 	xd(old_readlink, readlink);
 	ssize_t tmp = old_readlink(pathname, buf, bufsiz);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %s, %d) = %d\n","readlink", pathname, buf, bufsiz, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s', '%s', %d) = %d\n","readlink", pathname, buf, bufsiz, tmp);
 	// p("%s(%s, %s, %d) = %d\n","readlink", pathname, buf, bufsiz, tmp);
 	return tmp;
 }
@@ -535,7 +553,7 @@ S int (*old_remove) ( const char * filename ) = NULL;
 int remove ( const char * filename ) {
 	xd(old_remove,remove);
 	int tmp = old_remove(filename);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s) = %d\n","remove", filename, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s') = %d\n","remove", filename, tmp);
 	// p("%s(%s) = %d\n","remove", filename, tmp);
 	return tmp;
 }
@@ -545,7 +563,7 @@ S int (*old_rename) ( const char * oldname, const char * newname ) = NULL;
 int rename ( const char * oldname, const char * newname ) {
 	xd(old_rename,rename);
 	int tmp = old_rename( oldname, newname);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %s) = %d\n","rename", oldname, newname, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s', '%s') = %d\n","rename", oldname, newname, tmp);
 	// p("%s(%s, %s) = %d\n","rename", oldname, newname, tmp);
 	return tmp;
 }
@@ -564,7 +582,7 @@ S int (*old_rmdir)(const char *path) = NULL;
 int rmdir(const char *path) {
 	xd(old_rmdir,rmdir);
 	int tmp = old_rmdir(path);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s) = %d\n","rmdir", path, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s') = %d\n","rmdir", path, tmp);
 	// p("%s(%s) = %d\n","rmdir", path, tmp);
 	return tmp;
 }
@@ -582,7 +600,7 @@ S void (*old_setbuf)(FILE *stream, char *buffer) = NULL;
 
 void setbuf(FILE *stream, char *buffer) {
 	xd(old_setbuf, setbuf);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%p, %s)\n","setbuf", stream, buffer);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%p, '%s')\n","setbuf", stream, buffer);
 	// p("%s(%p, %s)\n","setbuf", stream, buffer);
 	old_setbuf(stream, buffer);
 }
@@ -602,7 +620,7 @@ S int (*old_setenv)(const char *name, const char *value, int overwrite) = NULL;
 int setenv(const char *name, const char *value, int overwrite) {
 	xd(old_setenv,setenv);
 	int tmp = old_setenv(name,value,overwrite);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %s, %d) = %d\n","setenv",name, value, overwrite, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s', '%s', %d) = %d\n","setenv",name, value, overwrite, tmp);
 	// p("%s(%s, %s, %d) = %d\n","setenv",name, value, overwrite, tmp);
 	return tmp;
 }
@@ -642,7 +660,7 @@ S int (*old_setvbuf) ( FILE * stream, char * buffer, int mode, size_t size ) = N
 int setvbuf ( FILE * stream, char * buffer, int mode, size_t size ) {
 	xd(old_setvbuf,setvbuf);
 	int tmp = old_setvbuf(stream, buffer, mode, size);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%p, %s, %d, %d) = %d\n","setvbuf",stream,buffer,mode,size);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%p, '%s', %d, %d) = %d\n","setvbuf",stream,buffer,mode,size);
 	// p("%s(%p, %s, %d, %d) = %d\n","setvbuf",stream,buffer,mode,size);
 	return tmp;
 }
@@ -666,13 +684,22 @@ void srand (unsigned int seed) {
 	old_srand(seed);
 }
 
-S int (*old_stat)(const char * file_name, struct stat *buf) = NULL;
+// S int (*old_stat)(const char * file_name, struct stat *buf) = NULL;
 
-int stat(const char * file_name, struct stat *buf) {
-	xd(old_stat,stat);
-	int tmp = old_stat(file_name, buf);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %p) = %d\n","stat", file_name, buf, tmp);
-	// p("%s(%s, %p) = %d\n","stat", file_name, buf, tmp);
+// int stat(const char * file_name, struct stat *buf) {
+// 	xd(old_stat,stat);
+// 	int tmp = old_stat(file_name, buf);
+// 	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %p) = %d\n","stat", file_name, buf, tmp);
+// 	// p("%s(%s, %p) = %d\n","stat", file_name, buf, tmp);
+// 	return tmp;
+// }
+
+S int (*old___xstat)(int ver, const char * path, struct stat * stat_buf) = NULL;
+
+int __xstat(int ver, const char * path, struct stat * stat_buf){
+	xd(old___xstat,__xstat);
+	int tmp = old___xstat(ver,path, stat_buf);
+	fprintf(mode,"[monitor] "); fprintf(mode,"__xstat(%d, '%s', %p) = %d\n",ver , path, stat_buf, tmp);
 	return tmp;
 }
 
@@ -681,7 +708,7 @@ S int (*old_symlink)(const char *path1, const char *path2) = NULL;
 int symlink(const char *path1, const char *path2) {
 	xd(old_symlink,symlink);
 	int tmp = old_symlink(path1,path2);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s,%s) = %d\n","symlink", path1, path2, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s','%s') = %d\n","symlink", path1, path2, tmp);
 	// p("%s(%s,%s) = %d\n","symlink", path1, path2, tmp);
 	return tmp;
 }
@@ -691,7 +718,7 @@ S int (*old_system)(const char *command) = NULL;
 int system(const char *command) {
 	xd(old_system, system);
 	int tmp = old_system(command);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s) = %d\n","system",command, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s') = %d\n","system",command, tmp);
 	// p("%s(%s) = %d\n","system",command, tmp);
 	return tmp;
 }
@@ -711,7 +738,7 @@ S char * (*old_tempnam)(const char *dir, const char *pfx) = NULL;
 char * tempnam(const char *dir, const char *pfx) {
 	xd(old_tempnam, tempnam);
 	char *tmp = old_tempnam(dir,pfx);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s, %s) = %s\n", "tempnam", dir, pfx, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s', '%s') = %s\n", "tempnam", dir, pfx, tmp);
 	// p("%s(%s, %s) = %s\n", "tempnam", dir, pfx, tmp);
 	return tmp;
 }
@@ -731,7 +758,7 @@ S char * (*old_tmpnam)(char *s) = NULL;
 char * tmpnam(char *s){
 	xd(old_tmpnam,tmpnam);
 	char *tmp = old_tmpnam(s);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%s) = %s\n","tmpnam", s, tmp );
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s('%s') = '%s'\n","tmpnam", s, tmp );
 	// p("%s(%s) = %s\n","tmpnam", s, tmp );
 	return tmp;
 }
@@ -751,7 +778,7 @@ S int (*old_unlinkat)(int dirfd, const char *pathname, int flags) = NULL;
 int unlinkat(int dirfd, const char *pathname, int flags){
 	xd(old_unlinkat,unlinkat);
 	int tmp = old_unlinkat(dirfd, pathname, flags);
-	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%d, %s, %d) = %d\n", "unlinkat", dirfd, pathname, flags, tmp);
+	fprintf(mode,"[monitor] "); fprintf(mode,"%s(%d, '%s', %d) = %d\n", "unlinkat", dirfd, pathname, flags, tmp);
 	// p("%s(%d, %s, %d) = %d\n", "unlinkat", dirfd, pathname, flags, tmp);
 	return tmp;
 }
