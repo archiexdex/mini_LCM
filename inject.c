@@ -95,6 +95,20 @@ int  dup2(int oldfd, int newfd) {
 S int (*old_execl)(const char *path, const char *arg, ...) = NULL;
 
 int execl(const char *path, const char *arg, ...) {
+	xd(old_execl,execl);
+	va_list vl;
+	va_start(vl, arg);
+	int tmp = old_execl(path, arg, vl);
+	fprintf(mode, "[monitor] execl(%s, %s",path, arg );
+	
+	const char *s = va_arg(vl,  char *);
+	while ( s != NULL ){
+ 		fprintf(stderr, ", %s", s);	
+ 		s = va_arg(vl, const char *);
+	}
+	fprintf(stderr, "NULL) = %d\n", tmp);	
+	
+	return tmp;
 }
 
 S int (*old_execlp)(const char *file, const char *arg, ...) = NULL;
