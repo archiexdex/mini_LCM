@@ -4,11 +4,14 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
+FILE* mode;
+
 #define S static
 #define mo "[monitor]"
 #define dl dlopen("libc.so.6", RTLD_LAZY)
 #define xd(a,b)({if(!a){void *ptr=dl; if(ptr) a=dlsym(ptr,#b);}})
-#define p(a,...) { fprintf(stderr,"[monitor] "); fprintf(stderr,a,__VA_ARGS__); } 
+#define p(a,...) { fprintf(mode,"[monitor] "); fprintf(mode,a,__VA_ARGS__); } 
+
 
 S void (*old__exit)(int status) = NULL;
 
@@ -100,7 +103,7 @@ int execlp(const char *file, const char *arg, ...) {
 }
 
 /*
-S int (*old_execle)(const char *path, const char *arg, ..., char * const envp[]) = NULL;
+S int (*old_execle)(const char *path, const char *arg, ...) = NULL;
 
 int execle(const char *path, const char *arg, ..., char * const envp[]) {
 }
@@ -119,6 +122,7 @@ int execvp(const char *file, char *const argv[]) {
 S int (*old_execvpe)(const char *file, char *const argv[], char *const envp[]) = NULL;
 
 int execvpe(const char *file, char *const argv[], char *const envp[]) {
+
 }
 
 S void   (*old_exit)    (int status) = NULL;
@@ -225,8 +229,12 @@ __attribute__((constructor))
 void start() {
 	xd(old_getenv, getenv);
 	char *p = old_getenv("MONITOR_OUTPUT");
-	printf("%s!!!!\n", p);
-
+	if ( !strcmp(p,"stderr") ){
+		mode = stderr;
+	}
+	else {
+		mode = fopen(p,"w");
+	}
 }
 
 char* getenv(const char* name) {
@@ -318,7 +326,7 @@ int mkstemp(char *template) {
 }
 
 S int (*old_open)(const char *pathname, int flags) = NULL;
-//S int (*old_open)(const char *path, int oflag, ... ) = NULL;
+//S int (*old_open)(const char *path, int oflag, ... ) = NULL; o_create
 
 int open(const char* pathname, int flg) {
 	xd(old_open,open);
