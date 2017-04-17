@@ -49,7 +49,7 @@ S int (*old_close)(int fd) = NULL;
 int close(int fd){
 	xd(old_close, close);
 	int tmp = old_close(fd);
-	p("%s(%d) = %d","close", fd, tmp);
+	p("%s(%d) = %d\n","close", fd, tmp);
 	return tmp;
 }
 
@@ -126,6 +126,7 @@ S void   (*old_exit)    (int status) = NULL;
 void   exit    (int status) {
 	xd(old_exit, exit);
 	p("%s(%d)\n","exit", status);
+	old_exit(status);
 }
 
 S int    (*old_fchdir)   (int fildes) = NULL;
@@ -440,6 +441,7 @@ S void (*old_rewinddir)(DIR *dirp) = NULL;
 void rewinddir(DIR *dirp) {
 	xd(old_rewinddir,rewinddir);
 	p("%s(%p)\n","rewinddir", dirp);
+	old_rewinddir(dirp);
 }
 
 S int (*old_rmdir)(const char *path) = NULL;
@@ -456,6 +458,7 @@ S void (*old_seekdir)(DIR *dirp, long loc) = NULL;
 void seekdir(DIR *dirp, long loc) {
 	xd(old_seekdir,seekdir);
 	p("%s(%p, %ld)\n","seekdir", dirp, loc);
+	old_seekdir(dirp, loc);
 }
 
 S void (*old_setbuf)(FILE *stream, char *buffer) = NULL;
@@ -463,6 +466,7 @@ S void (*old_setbuf)(FILE *stream, char *buffer) = NULL;
 void setbuf(FILE *stream, char *buffer) {
 	xd(old_setbuf, setbuf);
 	p("%s(%p, %s)\n","setbuf", stream, buffer);
+	old_setbuf(stream, buffer);
 }
 
 S int (*old_setegid)(gid_t egid) = NULL;
@@ -533,6 +537,7 @@ S void (*old_srand) (unsigned int seed) = NULL;
 void srand (unsigned int seed) {
 	xd(old_srand,srand);	
 	p("%s(%u)\n","srand",seed);
+	old_srand(seed);
 }
 
 S int (*old_stat)(const char * file_name, struct stat *buf) = NULL;
