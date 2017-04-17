@@ -22,7 +22,8 @@ Or the output will put in the file.
 
 There are 77 functions I monitor.
 
-The basic is below:
+The basic function are below:
+
 `closedir` `fdopendir` `opendir` `readdir` `readdir_r` `rewinddir` `seekdir` `telldir`   `creat` 
 `open`     `remove`    `rename`  `setbuf`  `setvbuf`   `tempnam`   `tmpfile` `tmpnam`    `exit`
 `getenv`   `mkdtemp`   `mkstemp` `putenv`  `rand`      `rand_r`    `setenv`  `srand`     `system`
